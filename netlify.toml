@@ -1,2 +1,2 @@
 [build]
-functions = "functions"  # points to your functions folder
+functions = "functions"
