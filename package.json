@@ -2,7 +2,7 @@
   "name": "stock-proxy-api",
   "version": "1.0.0",
   "description": "Netlify function to fetch stock prices from Yahoo Finance",
-  "main": "functions/stockProxy.js",
+  "main": "functions/stock.js",
   "type": "module",
   "scripts": {
     "start": "netlify dev",
