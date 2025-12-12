@@ -1,2 +1,2 @@
-/.netlify/functions/stock/* /stock/* 200
+/stock/* /.netlify/functions/stock/:splat 200
 /* api.lokiclarke.com 301
