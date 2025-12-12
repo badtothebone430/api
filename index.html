@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work In Progress</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        h1 {
+            font-size: 4em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        p {
+            font-size: 1.5em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        #countdown {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .number {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .label {
+            font-size: 1.2em;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Work In Progress</h1>
+    <p>This site is under construction. Launching on December 25, 2025.</p>
+    <div id="countdown">
+        <div class="time-unit">
+            <div class="number" id="days">00</div>
+            <div class="label">Days</div>
+        </div>
+        <div class="time-unit">
+            <div class="number" id="hours">00</div>
+            <div class="label">Hours</div>
+        </div>
+        <div class="time-unit">
+            <div class="number" id="minutes">00</div>
+            <div class="label">Minutes</div>
+        </div>
+        <div class="time-unit">
+            <div class="number" id="seconds">00</div>
+            <div class="label">Seconds</div>
+        </div>
+    </div>
+    <script>
+        const targetDate = new Date('2025-12-25T00:00:00');
+        function updateCountdown() {
+            const now = new Date();
+            const diff = targetDate - now;
+            if (diff <= 0) {
+                document.getElementById('countdown').innerHTML = '<div style="font-size: 2em;">Launched!</div>';
+                return;
+            }
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            document.getElementById('days').innerHTML = days.toString().padStart(2, '0');
+            document.getElementById('hours').innerHTML = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').innerHTML = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').innerHTML = seconds.toString().padStart(2, '0');
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>
