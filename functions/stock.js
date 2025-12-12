@@ -1,5 +1,15 @@
 import fetch from "node-fetch";
 
+const exchangeMap = {
+  'NasdaqGS': 'NSDQ',
+  'New York Stock Exchange': 'NYSE',
+  'NYSE American': 'AMEX',
+  'Cboe': 'CBOE',
+  'Toronto Stock Exchange': 'TSX',
+  'London Stock Exchange': 'LSE',
+  // Add more as needed
+};
+
 export async function handler(event, context) {
   try {
     const pathParts = event.path.split('/').filter(p => p);
