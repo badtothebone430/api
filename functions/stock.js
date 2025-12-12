@@ -13,13 +13,13 @@ const exchangeMap = {
 export async function handler(event, context) {
   try {
     const pathParts = event.path.split('/').filter(p => p);
-    if (pathParts.length < 4 || pathParts[2] !== 'stock') {
+    if (pathParts.length < 2 || pathParts[0] !== 'stock') {
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Invalid path' })
       };
     }
-    const ticker = pathParts[3].toUpperCase();
+    const ticker = pathParts[1].toUpperCase();
 
     const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d`, {
       headers: {
