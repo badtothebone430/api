@@ -11,7 +11,11 @@ export async function handler(event, context) {
     }
     const ticker = pathParts[3].toUpperCase();
 
-    const res = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`);
+    const res = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
     if (!res.ok) {
       return {
         statusCode: 404,
