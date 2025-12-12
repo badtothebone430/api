@@ -15,7 +15,7 @@ export async function handler(event, context) {
     if (!res.ok) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: 'Stock not found' })
+        body: JSON.stringify({ error: 'Stock not found', ticker: ticker, status: res.status })
       };
     }
 
@@ -24,7 +24,7 @@ export async function handler(event, context) {
     if (!quote) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: 'Stock not found' })
+        body: JSON.stringify({ error: 'Stock not found', ticker: ticker })
       };
     }
 
