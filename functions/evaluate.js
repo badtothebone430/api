@@ -16,6 +16,7 @@ function parsePrice(priceStr) {
 }
 
 export async function handler(event, context) {
+  let parsedTicker = null;
   try {
     const rootCsv = path.resolve(__dirname, '..', 'data.csv');
     const csv = fs.readFileSync(rootCsv, 'utf8');
@@ -23,16 +24,26 @@ export async function handler(event, context) {
     const header = lines.shift();
     const cols = header.split(',').map(c => c.trim());
 
-    const tickerQuery = (event.queryStringParameters && event.queryStringParameters.ticker) ? event.queryStringParameters.ticker.toUpperCase() : null;
+    // Accept ticker from the path segment `/functions/evaluate/TICKER` or query param
+    const pathParts = (event.path || '').split('/').filter(p => p);
+    let tickerQuery = null;
+    // Netlify function path looks like: /.netlify/functions/evaluate/TSLA
+    if (pathParts.length >= 4 && pathParts[0] === '.netlify' && pathParts[1] === 'functions' && pathParts[2] === 'evaluate') {
+      tickerQuery = pathParts[3] ? pathParts[3].toUpperCase() : null;
+    }
+    if (!tickerQuery && event.queryStringParameters && event.queryStringParameters.ticker) {
+      tickerQuery = event.queryStringParameters.ticker.toUpperCase();
+    }
 
     if (!tickerQuery) {
+      parsedTicker = tickerQuery;
       return {
         statusCode: 400,
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ error: 'Missing required query param: ticker' })
+        body: JSON.stringify({ error: 'Missing required ticker. Use path `/.netlify/functions/evaluate/TSLA` or `?ticker=TSLA`', parsedTicker: parsedTicker })
       };
     }
 
@@ -94,13 +105,14 @@ export async function handler(event, context) {
 
     // If neither price is available, return 404
     if (gamePrice === null && realPrice === null) {
+      parsedTicker = symbol;
       return {
         statusCode: 404,
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ error: 'No price data found for ticker', ticker: symbol })
+        body: JSON.stringify({ error: 'No price data found for ticker', ticker: symbol, parsedTicker: parsedTicker })
       };
     }
 
@@ -124,7 +136,7 @@ export async function handler(event, context) {
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message })
+      body: JSON.stringify({ error: err.message, parsedTicker: parsedTicker })
     };
   }
 }
