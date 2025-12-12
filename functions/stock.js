@@ -46,7 +46,7 @@ export async function handler(event, context) {
       symbol: meta.symbol,
       name: meta.shortName || meta.longName,
       price: meta.regularMarketPrice,
-      exchange: meta.fullExchangeName || meta.exchangeName
+      exchange: exchangeMap[meta.fullExchangeName] || meta.exchangeName
     };
 
     return {
