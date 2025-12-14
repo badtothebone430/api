@@ -12,14 +12,24 @@ const exchangeMap = {
 
 export async function handler(event, context) {
   try {
-    const pathParts = event.path.split('/').filter(p => p);
-    if (pathParts.length < 4 || pathParts[2] !== 'stock') {
+    const pathParts = (event.path || '').split('/').filter(p => p);
+    // Support both Netlify function path: /.netlify/functions/stock/TSLA
+    // and friendly routes: /stock/TSLA or /stocks/TSLA
+    let ticker = null;
+    const symbolFromQuery = event.queryStringParameters && (event.queryStringParameters.symbol || event.queryStringParameters.ticker);
+    if (symbolFromQuery) ticker = String(symbolFromQuery).toUpperCase();
+    else if (pathParts.length >= 4 && pathParts[0] === '.netlify' && pathParts[1] === 'functions' && (pathParts[2] === 'stock' || pathParts[2] === 'stocks')) {
+      ticker = pathParts[3] ? pathParts[3].toUpperCase() : null;
+    } else if (pathParts.length >= 2 && (pathParts[0] === 'stock' || pathParts[0] === 'stocks')) {
+      ticker = pathParts[1] ? pathParts[1].toUpperCase() : null;
+    }
+
+    if (!ticker) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Invalid path' })
+        body: JSON.stringify({ error: 'Missing required symbol. Use /stocks/TSLA, /stock/TSLA, /.netlify/functions/stock/TSLA or ?symbol=TSLA' })
       };
     }
-    const ticker = pathParts[3].toUpperCase();
 
     const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d`, {
       headers: {

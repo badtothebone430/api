@@ -27,12 +27,16 @@ export async function handler(event, context) {
     // Accept ticker from the path segment `/functions/evaluate/TICKER` or query param
     const pathParts = (event.path || '').split('/').filter(p => p);
     let tickerQuery = null;
-    // Netlify function path looks like: /.netlify/functions/evaluate/TSLA
-    if (pathParts.length >= 4 && pathParts[0] === '.netlify' && pathParts[1] === 'functions' && pathParts[2] === 'evaluate') {
+    // Accept multiple path forms:
+    // - Netlify function path: /.netlify/functions/evaluate/TSLA
+    // - Friendly route: /evaluate/TSLA
+    // - Query param: ?ticker=TSLA
+    const symbolFromQuery = event.queryStringParameters && (event.queryStringParameters.ticker || event.queryStringParameters.symbol);
+    if (symbolFromQuery) tickerQuery = String(symbolFromQuery).toUpperCase();
+    else if (pathParts.length >= 4 && pathParts[0] === '.netlify' && pathParts[1] === 'functions' && pathParts[2] === 'evaluate') {
       tickerQuery = pathParts[3] ? pathParts[3].toUpperCase() : null;
-    }
-    if (!tickerQuery && event.queryStringParameters && event.queryStringParameters.ticker) {
-      tickerQuery = event.queryStringParameters.ticker.toUpperCase();
+    } else if (pathParts.length >= 2 && pathParts[0] === 'evaluate') {
+      tickerQuery = pathParts[1] ? pathParts[1].toUpperCase() : null;
     }
 
     if (!tickerQuery) {

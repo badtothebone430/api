@@ -26,7 +26,7 @@
   <h2>Endpoints</h2>
 
   <h3>GET /stocks/{symbol} (alias: <code>/stock/{symbol}</code>)</h3>
-  <p>Returns a quick quote for a stock ticker. The singular form <code>/stock</code> is supported as an alias.</p>
+  <p>Returns a quick quote for a stock ticker. The singular form <code>/stock</code> is supported as an alias. You can also call the Netlify function path directly: <code>/.netlify/functions/stock/{symbol}</code>, or pass the symbol as a query parameter <code>?symbol=TSLA</code>.</p>
   <ul>
     <li><strong>Path parameter</strong>: <code>{symbol}</code> — required, stock ticker (e.g., <code>TSLA</code>).</li>
   </ul>
