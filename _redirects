@@ -1,2 +1,10 @@
 / /docs 301!
 /docs /docs.html 200
+
+# Friendly routes that map to Netlify functions (rewrites)
+/stocks/:symbol /.netlify/functions/stock/:symbol 200
+/stocks /.netlify/functions/stock 200
+/stock/:symbol /.netlify/functions/stock/:symbol 200
+/stock /.netlify/functions/stock 200
+/evaluate/:symbol /.netlify/functions/evaluate/:symbol 200
+/evaluate /.netlify/functions/evaluate 200

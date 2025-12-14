@@ -18,50 +18,76 @@
 <body>
   <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
   <h1>API Documentation</h1>
-  <p>This page documents how to call the API included in this repository.</p>
-
-  <h2>Overview</h2>
-  <p>The repository includes a Netlify Function at <code>functions/stockProxy.js</code>. When deployed on Netlify the function is available at <code>/.netlify/functions/stockProxy</code>. Locally it can be invoked via your dev server or Netlify CLI.</p>
+  <p>This API provides two public endpoints you can call from browsers or servers to get stock information and a simple evaluation signal. Responses are JSON and served with CORS enabled for convenience.</p>
 
   <h2>Base URL</h2>
-  <p>If hosted on Netlify or served from the repo root, use the site root as the base URL. Example (production):</p>
-  <pre>https://your-site.netlify.app/.netlify/functions/stockProxy</pre>
+  <p>If deployed at <strong>https://api.lokiclarke.com</strong> the API exposes friendly endpoints at <code>/stocks/{symbol}</code> and <code>/evaluate/{symbol}</code> (no <code>/.netlify/functions</code> prefix required). Examples below use the production base URL; replace with your local dev server when testing.</p>
 
   <h2>Endpoints</h2>
-  <h3>GET /.netlify/functions/stockProxy?symbol={symbol}</h3>
-  <p>Query parameters:</p>
+
+  <h3>GET /stocks/{symbol} (alias: <code>/stock/{symbol}</code>)</h3>
+  <p>Returns a quick quote for a stock ticker. The singular form <code>/stock</code> is supported as an alias.</p>
   <ul>
-    <li><strong>symbol</strong> — stock ticker (required).</li>
+    <li><strong>Path parameter</strong>: <code>{symbol}</code> — required, stock ticker (e.g., <code>TSLA</code>).</li>
   </ul>
-
-  <h2>Examples</h2>
-  <p>curl</p>
-  <pre>curl "https://your-site.netlify.app/.netlify/functions/stockProxy?symbol=TSLA"</pre>
-
-  <p>Fetch (browser / node)</p>
-  <pre>fetch('/.netlify/functions/stockProxy?symbol=TSLA')
-  .then(r =&gt; r.json())
-  .then(data =&gt; console.log(data))
-  .catch(console.error)</pre>
-
-  <h2>Response</h2>
-  <p>The function proxied response may vary depending on the upstream API. Typical JSON structure:</p>
+  <p>Example (curl):</p>
+  <pre>curl "https://api.lokiclarke.com/stocks/TSLA"
+curl "https://api.lokiclarke.com/stock/TSLA"</pre>
+  <p>Response (200):</p>
   <pre>{
   "symbol": "TSLA",
+  "name": "Tesla, Inc.",
   "price": 123.45,
-  "timestamp": "2025-12-14T12:00:00Z"
+  "exchange": "NSDQ"
 }</pre>
-
-  <h2>Authentication & Rate Limits</h2>
-  <p>Check the upstream API requirements. This repo's function may include an API key or proxy logic — review <code>functions/stockProxy.js</code> for details.</p>
-
-  <h2>Troubleshooting</h2>
+  <p>Possible errors:</p>
   <ul>
-    <li>If you get CORS errors while testing locally, run the Netlify dev server: <code>netlify dev</code>.</li>
-    <li>Inspect server logs or the function file for API key configuration.</li>
+    <li><strong>400</strong> — invalid path or request</li>
+    <li><strong>404</strong> — ticker not found</li>
+    <li><strong>500</strong> — upstream or server error</li>
   </ul>
 
-  <p>If you'd like, I can expand this page with full reference docs, examples for other endpoints, or deployment instructions.</p>
+  <h3>GET /evaluate/{symbol} or ?ticker={symbol}</h3>
+  <p>Compares a game API / CSV price with a real price and returns a simple signal.</p>
+  <ul>
+    <li><strong>Path</strong>: <code>/evaluate/TSLA</code> or use query <code>?ticker=TSLA</code>.</li>
+    <li><strong>Optional query</strong>: <code>threshold</code> — numeric dollar threshold for signaling (default <code>5</code>).</li>
+  </ul>
+  <p>Example (curl):</p>
+  <pre>curl "https://api.lokiclarke.com/evaluate/TSLA?threshold=2.5"</pre>
+  <p>Response (200):</p>
+  <pre>{
+  "ticker": "TSLA",
+  "gamePrice": 120.5,
+  "realPrice": 123.45,
+  "diff": 2.95,
+  "diffPercent": 2.449,&nbsp;
+  "signal": "buy"
+}</pre>
+  <p>Possible errors:</p>
+  <ul>
+    <li><strong>400</strong> — missing required ticker</li>
+    <li><strong>404</strong> — no price data available</li>
+    <li><strong>500</strong> — server error</li>
+  </ul>
+
+  <h2>Authentication & Rate Limits</h2>
+  <p>Currently these endpoints are public and do not require authentication. They may call upstream services (third-party APIs) which have their own rate limits; treat heavy automated polling as unsupported. If you need API keys or higher rate limits, contact the site owner.</p>
+
+  <h2>CORS</h2>
+  <p>Responses include <code>Access-Control-Allow-Origin: *</code> so you can call them directly from browser-based apps for testing or small projects.</p>
+
+  <h2>Error format</h2>
+  <p>Errors return JSON with an <code>error</code> message and sometimes additional fields. Example:</p>
+  <pre>{
+  "error": "Ticker not found",
+  "ticker": "FOO"
+}</pre>
+
+  <h2>Support & Feedback</h2>
+  <p>If you find issues or want additional endpoints (batch quotes, historical data, alerts), open an issue in the repository or email the site owner.</p>
+
+  <p>Notes for developers: the implementation files are <code>functions/stock.js</code> and <code>functions/evaluate.js</code>. They read <code>data.csv</code> and call external APIs; exact upstream behaviour may change responses.</p>
   <script>
     (function(){
       const btn = document.getElementById('themeToggle');
