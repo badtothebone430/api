@@ -47,7 +47,12 @@ export async function handler(event, context) {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ error: 'Missing required ticker. Use path `/.netlify/functions/evaluate/TSLA` or `?ticker=TSLA`', parsedTicker: parsedTicker })
+        body: JSON.stringify({
+          error: 'Missing required ticker. Use path `/.netlify/functions/evaluate/TSLA` or `?ticker=TSLA`',
+          parsedTicker: parsedTicker,
+          path: event.path,
+          pathParts: pathParts
+        })
       };
     }
 
@@ -116,7 +121,13 @@ export async function handler(event, context) {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ error: 'No price data found for ticker', ticker: symbol, parsedTicker: parsedTicker })
+        body: JSON.stringify({
+          error: 'No price data found for ticker',
+          ticker: symbol,
+          parsedTicker: parsedTicker,
+          path: event.path,
+          pathParts: pathParts
+        })
       };
     }
 
@@ -140,7 +151,11 @@ export async function handler(event, context) {
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message, parsedTicker: parsedTicker })
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ error: err.message, parsedTicker: parsedTicker, path: event.path })
     };
   }
 }
