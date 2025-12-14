@@ -27,7 +27,16 @@ export async function handler(event, context) {
     if (!ticker) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Missing required symbol. Use /stocks/TSLA, /stock/TSLA, /.netlify/functions/stock/TSLA or ?symbol=TSLA' })
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          error: 'Missing required symbol. Use /stocks/TSLA, /stock/TSLA, /.netlify/functions/stock/TSLA or ?symbol=TSLA',
+          parsedTicker: ticker,
+          path: event.path,
+          pathParts: pathParts
+        })
       };
     }
 
@@ -39,7 +48,11 @@ export async function handler(event, context) {
     if (!res.ok) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: 'Stock not found', ticker: ticker, status: res.status })
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ error: 'Stock not found', ticker: ticker, status: res.status, path: event.path })
       };
     }
 
@@ -48,7 +61,11 @@ export async function handler(event, context) {
     if (!meta) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: 'Stock not found', ticker: ticker })
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ error: 'Stock not found', ticker: ticker, path: event.path })
       };
     }
 
@@ -71,7 +88,11 @@ export async function handler(event, context) {
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message })
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ error: err.message, path: event.path, parsedTicker: typeof ticker !== 'undefined' ? ticker : null })
     };
   }
 }
