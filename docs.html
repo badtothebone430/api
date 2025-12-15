@@ -3,20 +3,113 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Documentation — Coming Soon</title>
+  <title>API Documentation</title>
+  <link rel="icon" href="/icon.png?v=2" type="image/png" sizes="16x16">
+  <link rel="icon" href="/icon.png?v=2" type="image/png" sizes="32x32">
+  <link rel="icon" href="/icon.png?v=2" type="image/png" sizes="512x512">
+  <link rel="apple-touch-icon" href="/icon.png?v=2" sizes="180x180">
   <style>
-    body{font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif;margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}
-    .card{background:rgba(0,0,0,0.25);padding:32px;border-radius:12px;max-width:720px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.35)}
-    h1{margin:0 0 8px 0;font-size:2.2rem}
-    p{margin:0 0 16px 0;opacity:0.95}
-    a{color:#fff;text-decoration:underline}
+    :root{--bg:#ffffff;--text:#111111;--muted:#666666;--card:#f4f4f4;--accent:#667eea}
+    [data-theme='dark']{--bg:#0b1020;--text:#e6eef8;--muted:#9fb0d6;--card:#0f1724;--accent:#7c92ff}
+    body{font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif;margin:24px;color:var(--text);background:var(--bg);transition:background .2s,color .2s}
+    pre{background:var(--card);padding:12px;border-radius:6px;overflow:auto;color:var(--text)}
+    h1,h2{color:var(--text)}
+    a.button{display:inline-block;padding:8px 12px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none}
+    .theme-toggle{position:fixed;right:16px;top:16px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:8px;border-radius:8px;cursor:pointer}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Documentation</h1>
-    <p>Coming soon — full API documentation will be published here shortly.</p>
-    <p><a href="index.html">Return to Home</a></p>
-  </div>
+  <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+  <h1>API Documentation</h1>
+  <p>This API provides two public endpoints you can call from browsers or servers to get stock information and a simple evaluation signal. Responses are JSON and served with CORS enabled for convenience.</p>
+
+  <h2>Base URL</h2>
+  <p>If deployed at <strong>https://api.lokiclarke.com</strong> the API exposes friendly endpoints at <code>/stocks/{symbol}</code> and <code>/evaluate/{symbol}</code> (no <code>/.netlify/functions</code> prefix required). Examples below use the production base URL; replace with your local dev server when testing.</p>
+
+  <h2>Endpoints</h2>
+
+  <h3>GET /stocks/{symbol} (alias: <code>/stock/{symbol}</code>)</h3>
+  <p>Returns a quick quote for a stock ticker. The singular form <code>/stock</code> is supported as an alias. You can also call the Netlify function path directly: <code>/.netlify/functions/stock/{symbol}</code>, or pass the symbol as a query parameter <code>?symbol=TSLA</code>.</p>
+  <ul>
+    <li><strong>Path parameter</strong>: <code>{symbol}</code> — required, stock ticker (e.g., <code>TSLA</code>).</li>
+  </ul>
+  <p>Example (curl):</p>
+  <pre>curl "https://api.lokiclarke.com/stocks/TSLA"
+curl "https://api.lokiclarke.com/stock/TSLA"</pre>
+  <p>Response (200):</p>
+  <pre>{
+  "symbol": "TSLA",
+  "name": "Tesla, Inc.",
+  "price": 123.45,
+  "exchange": "NSDQ"
+}</pre>
+  <p>Possible errors:</p>
+  <ul>
+    <li><strong>400</strong> — invalid path or request</li>
+    <li><strong>404</strong> — ticker not found</li>
+    <li><strong>500</strong> — upstream or server error</li>
+  </ul>
+
+  <h3>GET /evaluate/{symbol} or ?ticker={symbol}</h3>
+  <p>Compares a game API / CSV price with a real price and returns a simple signal.</p>
+  <ul>
+    <li><strong>Path</strong>: <code>/evaluate/TSLA</code> or use query <code>?ticker=TSLA</code>.</li>
+    <li><strong>Optional query</strong>: <code>threshold</code> — numeric dollar threshold for signaling (default <code>5</code>).</li>
+  </ul>
+  <p>Example (curl):</p>
+  <pre>curl "https://api.lokiclarke.com/evaluate/TSLA?threshold=2.5"</pre>
+  <p>Response (200):</p>
+  <pre>{
+  "ticker": "TSLA",
+  "gamePrice": 120.5,
+  "realPrice": 123.45,
+  "diff": 2.95,
+  "diffPercent": 2.449,&nbsp;
+  "signal": "buy"
+}</pre>
+  <p>Possible errors:</p>
+  <ul>
+    <li><strong>400</strong> — missing required ticker</li>
+    <li><strong>404</strong> — no price data available</li>
+    <li><strong>500</strong> — server error</li>
+  </ul>
+
+  <h2>Authentication & Rate Limits</h2>
+  <p>Currently these endpoints are public and do not require authentication. They may call upstream services (third-party APIs) which have their own rate limits; treat heavy automated polling as unsupported. If you need API keys or higher rate limits, contact the site owner.</p>
+
+  <h2>CORS</h2>
+  <p>Responses include <code>Access-Control-Allow-Origin: *</code> so you can call them directly from browser-based apps for testing or small projects.</p>
+
+  <h2>Error format</h2>
+  <p>Errors return JSON with an <code>error</code> message and sometimes additional fields. Example:</p>
+  <pre>{
+  "error": "Ticker not found",
+  "ticker": "FOO"
+}</pre>
+
+  <h2>Support & Feedback</h2>
+  <h2>Support & Feedback</h2>
+  <p>If you find issues or want additional endpoints (batch quotes, historical data, alerts), open an issue in the repository or email the site owner at <a href="mailto:support@lokiclarke.com">support@lokiclarke.com</a>.</p>
+  <p>For suggestions, support requests, or to report bugs, contact <a href="mailto:support@lokiclarke.com">support@lokiclarke.com</a>. Expect a reply within 48 hours.</p>
+
+  <p>Notes for developers: the implementation files are <code>functions/stock.js</code> and <code>functions/evaluate.js</code>. They read <code>data.csv</code> and call external APIs; exact upstream behaviour may change responses.</p>
+  <script>
+    (function(){
+      const btn = document.getElementById('themeToggle');
+      const root = document.documentElement;
+      function apply(theme){
+        if(theme === 'dark') root.setAttribute('data-theme','dark');
+        else root.removeAttribute('data-theme');
+        btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+      }
+      const saved = localStorage.getItem('site-theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      apply(saved);
+      btn.addEventListener('click', ()=>{
+        const next = (document.documentElement.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+        localStorage.setItem('site-theme', next);
+        apply(next);
+      });
+    })();
+  </script>
 </body>
 </html>
