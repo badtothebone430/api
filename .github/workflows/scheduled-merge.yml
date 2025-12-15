@@ -1,0 +1,32 @@
+name: Scheduled Push Test → Main
+
+on:
+  schedule:
+    - cron: "0 4 15 12 *"   # Runs at 15:00 UTC daily (change this)
+
+jobs:
+  push-test-to-main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+      - name: Fetch all branches
+        run: git fetch origin
+
+      - name: Checkout test branch
+        run: git checkout test
+
+      - name: Push test → main
+        env:
+          PAT: ${{ secrets.PAT }}
+        run: |
+          git push https://x-access-token:${PAT}@github.com/${{ github.repository }} test:main
