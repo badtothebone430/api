@@ -93,7 +93,8 @@ export async function handler(event, context) {
       }
     }
 
-    const gamePrice = (gameApiPrice !== null && Number.isFinite(gameApiPrice)) ? gameApiPrice : gameCsvPrice;
+    // Only use the price from the POST /assets/info response
+    const gamePrice = (gameApiPrice !== null && Number.isFinite(gameApiPrice)) ? gameApiPrice : null;
 
     // fetch our real price via existing netlify function
     let realPrice = null;
