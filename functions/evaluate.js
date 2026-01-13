@@ -72,13 +72,26 @@ export async function handler(event, context) {
       stockId = parts[0]; // id column
     }
 
-    // fetch game API price using POST to /assets/info
+    // fetch game API price using POST to /assets/info, including session cookie if present
     let gameApiPrice = null;
     if (stockId) {
       try {
+        // Extract cookie from incoming request headers
+        let cookieHeader = '';
+        if (event.headers) {
+          cookieHeader = event.headers.cookie || event.headers.Cookie || '';
+        }
+        // Find the virtual_stock_market_game_session cookie value
+        let sessionCookie = '';
+        if (cookieHeader) {
+          const match = cookieHeader.match(/virtual_stock_market_game_session=([^;]+)/);
+          if (match) sessionCookie = match[0];
+        }
+        const fetchHeaders = { "Content-Type": "application/json" };
+        if (sessionCookie) fetchHeaders["Cookie"] = sessionCookie;
         const gRes = await fetch("https://virtualstockmarketgame.com/assets/info", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: fetchHeaders,
           body: JSON.stringify({ ids: [Number(stockId)] })
         });
         if (gRes.ok) {
