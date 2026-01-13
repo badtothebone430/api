@@ -56,26 +56,41 @@ export async function handler(event, context) {
       };
     }
 
-    // find the CSV row for the ticker (if any) to use as fallback price
+    // find the CSV row for the ticker (if any) to use as fallback price and get id
     const matchLine = lines.find(l => {
       const parts = splitCsvLine(l);
-      const symbol = (parts[1] || '').replace(/\"/g, '').trim().toUpperCase();
+      const symbol = (parts[1] || '').replace(/"/g, '').trim().toUpperCase();
       return symbol === tickerQuery;
     });
 
     const symbol = tickerQuery;
-    const gameCsvPrice = matchLine ? parsePrice((splitCsvLine(matchLine)[4] || '').trim()) : null;
+    let gameCsvPrice = null;
+    let stockId = null;
+    if (matchLine) {
+      const parts = splitCsvLine(matchLine);
+      gameCsvPrice = parsePrice((parts[4] || '').trim());
+      stockId = parts[0]; // id column
+    }
 
-    // fetch game API price
+    // fetch game API price using POST to /assets/info
     let gameApiPrice = null;
-    try {
-      const gRes = await fetch(`https://virtualstockmarketgame.com/getstock/${symbol}`);
-      if (gRes.ok) {
-        const gData = await gRes.json();
-        if (gData && typeof gData.price === 'number') gameApiPrice = gData.price;
+    if (stockId) {
+      try {
+        const gRes = await fetch("https://virtualstockmarketgame.com/assets/info", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: [Number(stockId)] })
+        });
+        if (gRes.ok) {
+          const gData = await gRes.json();
+          // Expecting an array of objects with id and price
+          if (Array.isArray(gData) && gData.length > 0 && typeof gData[0].price === 'number') {
+            gameApiPrice = gData[0].price;
+          }
+        }
+      } catch (e) {
+        // ignore
       }
-    } catch (e) {
-      // ignore
     }
 
     const gamePrice = (gameApiPrice !== null && Number.isFinite(gameApiPrice)) ? gameApiPrice : gameCsvPrice;
